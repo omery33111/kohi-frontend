@@ -3,7 +3,7 @@ import './loginpage.css';
 import { Login } from './Login';
 import { loginUser } from './loginAPI';
 import { jwtDecode } from 'jwt-decode';
-import { Modal } from 'react-bootstrap';
+import { Col, Modal, Row } from 'react-bootstrap';
 
 
 
@@ -28,16 +28,45 @@ const LoginPage = () => {
         setShowModal(!showModal);
     };
 
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const validatePassword = (userPassword: string) => {
+        const minLength = 8;
+        const hasUpperCase = /[A-Z]/.test(userPassword);
+        const hasNumber = /\d/.test(userPassword);
+
+        if (userPassword.length < minLength) {
+            setErrorMessage('הסיסמה חייבת להיות באורך של 8 תווים לפחות');
+            return false;
+        }
+        if (!hasUpperCase) {
+            setErrorMessage('הסיסמה חייבת להכיל לפחות אות גדולה אחת');
+            return false;
+        }
+        if (!hasNumber) {
+            setErrorMessage('הסיסמה חייבת להכיל לפחות ספרה אחת');
+            return false;
+        }
+
+        setErrorMessage("");
+        
+        return true;
+    };
+
     
     const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!validatePassword(password)) {
+            return;
+        }
     
         const userData: Login = {
             email,
             password,
         };
     
-        loginUser(userData).then(data => 
+        loginUser(userData).then(data =>
             {
                 if (data && data.access) {
                     const decoded = jwtDecode(data.access);
@@ -47,18 +76,19 @@ const LoginPage = () => {
                 }
             })
             .catch(error => {
-                console.error(error);
-            });
+                console.error(error.response.data);
+                setErrorMessage("אימייל או סיסמה שגויים");
+            }
+        );
     }
-    
 
     
   	return (
-    		<div className='loginCompany'>
+    		<Row className='loginCompany'>
 
      
 
-      			<div className='loginCompanyInner'>
+      			<Col className='loginCompanyInner'>
                     
                   <div className='loginInfo'>
 
@@ -143,15 +173,16 @@ const LoginPage = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         value={password}
                         required
-                        maxLength={15}
+                        maxLength={20}
                         placeholder="סיסמא"
                         />
                     </div>
                 </div>
               </div>
             
-
             <div style = {{height: "18px"}}/>
+
+            <p style = {{color: "red", fontSize: "15px", position: "absolute", right: 271, marginTop: 9, width: "350px"}}>{errorMessage}</p>
 
             <div className="underline-button-parent-pass">
                 <div className="underline-button-pass">
@@ -204,7 +235,6 @@ const LoginPage = () => {
             </Modal>
                 </div>
             )}
-                
 
             <button className="button" type="submit">
                 <b className="button1">התחבר</b>
@@ -213,7 +243,8 @@ const LoginPage = () => {
 
                 </div>
 
-      			</div>
+      			</Col>
+                <Col>
 
 
                                                                                     <div className='frameParent'>
@@ -223,7 +254,8 @@ const LoginPage = () => {
                               															<div className='parent1'>
                                 																<img className='lineDuotoneNotesNotes' alt="" width = "50px" height = "80px" src={require(`../../images/kohi.png`)} />
                               															</div>
-                              														</div>
+                                                                                          </Col>
+                              														</Row>
                               												
                                                                                         );
                             														};
